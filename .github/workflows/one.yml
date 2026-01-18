@@ -1,0 +1,22 @@
+name: one
+
+on: [push]
+
+jobs:
+  job1:
+    name: Job 1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Step 1
+        uses: actions/checkout@v4
+        #run: echo This is job 1, step 1
+      - name: Step 2
+        run: env | sort
+  job2:
+    name: Job 2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Step 1
+        uses: actions/checkout@v4
+      - name: Step 2
+        run: "Get-Childitem env: | Sort-Object Name"
