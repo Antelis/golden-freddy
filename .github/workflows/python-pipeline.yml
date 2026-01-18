@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 env:
   # Force lowercase for Docker image names
-  REPO_LOWER: ${{ github.repository | lower }}
+  REPO_LOWER: ${{ github.repository }}
 
 jobs:
   lint-and-test:
@@ -37,8 +37,6 @@ jobs:
     permissions:
       packages: write
       contents: read
-    env:
-      REPO_LOWER: ${{ github.repository | lower }}
 
     steps:
       - name: Checkout Code
@@ -60,7 +58,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ env.REPO_LOWER }}
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=sha,format=short,prefix=,suffix=
             type=sha,format=long,prefix=,suffix=
@@ -83,8 +81,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: read
-    env:
-      REPO_LOWER: ${{ github.repository | lower }}
 
     steps:
       - name: Log in to GitHub Container Registry
@@ -95,7 +91,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull the image from GitHub Container Registry
-        run: docker pull ghcr.io/${{ env.REPO_LOWER }}:${{ github.sha }}
+        run: |
+          # Convert repository name to lowercase for Docker
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker pull ghcr.io/${REPO_NAME}:${{ github.sha }}
 
       - name: Run the Image
-        run: docker run --rm ghcr.io/${{ env.REPO_LOWER }}:${{ github.sha }} | grep -i hello || exit 1
+        run: |
+          # Convert repository name to lowercase for Docker
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker run --rm ghcr.io/${REPO_NAME}:${{ github.sha }} | grep -i hello || exit 1
